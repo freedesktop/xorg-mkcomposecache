@@ -10,77 +10,165 @@ exiterr() {
 }
 
 usage() {
-  echo 2>&1 "$0 [x11-root] [/prefix]"
-  echo 2>&1 "e.g. $0 /tmp/build-xorg /usr/X11R6"
+cat 1>&2 <<EOUSAGE
+
+$0 [var=arg] [...] root
+e.g. $0 prefix=/usr/X11R7 /tmp/build-xorg
+
+Base defaults:
+    prefix=/usr
+    libs={lib64,lib}
+    user=nobody  (only if $0 is run as root)
+
+Program + args defaults:
+    xvfb=\$root\$prefix/bin/Xvfb
+    xvfbopts='-fp \$root\$prefix/\$libs/X11/fonts/misc/
+              -sp \$root/etc/X11/xserver/SecurityPolicy
+	      -co \$root\$prefix/\$libs/X11/rgb'
+    xbiff=\$root\$prefix/bin/xbiff
+    mkcomposecache=\$root\$prefix/sbin/mkcomposecache
+
+Directory + path defaults:
+    ldpath='\$root\$prefix/\$libs'
+    cachedir=\$root/var/cache/libx11/compose
+    localedir=\$prefix/{share,\$libs}/X11/locale  (relative to \$root)
+
+EOUSAGE
   exit 1
 }
 
-[ $# != 2 ] && usage
-case "$1" in
--*)
-  usage
-esac
 
-ROOT="$1"
-PREFIX="`echo "$2" | sed 's|^//*||;s|^|/|;s|/*/$||'`"
+# Option parsing
 
-xvfb=$PREFIX/bin/Xvfb
-mkcomposecache=$PREFIX/sbin/mkcomposecache
-localedir=$PREFIX/lib/X11/locale
-test -r $ROOT$PREFIX/share/X11/locale/compose.dir && localedir=$PREFIX/share/X11/locale
-composecache=/var/X11R6/compose-cache
+while [ "x$1" != x ] ; do
+  case "$1" in
+  -*)
+    usage
+    ;;
+  *=*)
+    eval "$1"
+    shift
+    ;;
+  *)
+    break
+  esac
+done
 
-test -d $ROOT                       || exiterr "no directory $ROOT"
-test -x $ROOT$xvfb                  || exiterr "cannot find $xvfb in $ROOT"
-test -x $ROOT$PREFIX/bin/xbiff      || exiterr "cannot find $PREFIX/bin/xbiff in $ROOT"
-test -x $ROOT$mkcomposecache        || exiterr "cannot find $mkcomposecache in $ROOT"
-test -r $ROOT$localedir/compose.dir || exiterr "cannot find $localedir in $ROOT"
+test $# == 1 || usage
 
-mkdir -p $ROOT$composecache
-chmod 755 $ROOT$composecache
+
+# Defaults
+
+root="$1"
+test "x$prefix" = x  && prefix=/usr
+root="`echo "$root"     | sed 's|^//*||;s|^|/|;s|/*/$||'`"
+prefix="`echo "$prefix" | sed 's|^//*||;s|^|/|;s|/*/$||'`"
+
+if [ "x$libs" = x ] ; then
+  test -d $root$prefix/lib   && libs=lib
+  test -d $root$prefix/lib64 && libs=lib64
+fi
+if [ "x$localedir" = x ] ; then
+  test -r $root$prefix/$libs/X11/locale/compose.dir && localedir=$prefix/$libs/X11/locale
+  test -r $root$prefix/share/X11/locale/compose.dir && localedir=$prefix/share/X11/locale
+fi
+
+test "x$ldpath" = x         && ldpath=$root$prefix/$libs
+test "x$xvfb" = x           && xvfb=$root$prefix/bin/Xvfb
+test "x$xbiff" = x          && xbiff=$root$prefix/bin/xbiff
+test "x$mkcomposecache" = x && mkcomposecache=$root$prefix/sbin/mkcomposecache
+test "x$cachedir" = x       && cachedir=$root/var/cache/libx11/compose
+test "x$xvfbopts" = x       && xvfbopts="-fp $root$prefix/$libs/X11/fonts/misc/ -sp $root/etc/X11/xserver/SecurityPolicy -co $root$prefix/$libs/X11/rgb"
+test "x$user" = x           && user=nobody
+test "x`whoami`" = xroot    || user=""
+
+# Verification
+
+test -d $root                       || exiterr "no directory $root"
+test -d $root$prefix                || exiterr "no directory $prefix in $root"
+
+test "x$libs" = x                   && exiterr "no default libs found"
+test "x$localedir" = x              && exiterr "no default localedir found"
+
+test -x $xvfb                       || exiterr "cannot find $xvfb"
+test -x $xbiff                      || exiterr "cannot find $xbiff"
+test -x $mkcomposecache             || exiterr "cannot find $mkcomposecache"
+test -r $root$localedir/compose.dir || exiterr "cannot find $root$localedir"
+
+cat <<EOSETUP
+
+Creating compose cache files in $cachedir/
+for $root$localedir/*, internal name $localedir/*
+
+  root           ${root:-/}
+  prefix         ${prefix:-/}
+  libs           $libs
+  user           ${user:--}
+
+  xvfb           $xvfb
+  xvfbopts       $xvfbopts
+  xbiff          $xbiff
+  mkcomposecache $mkcomposecache
+
+  ldpath         $ldpath
+  cachedir       $cachedir
+  localedir      $localedir  in ${root:-/}
+
+EOSETUP
+
+
+# Setup
+
+mkdir -p $cachedir  || exiterr "cannot mkdir $cachedir"
+chmod 755 $cachedir || exiterr "cannot chmod $cachedir"
 
 tmpfile="`mktemp /tmp/Xvfb.log.XXXXXXXXXX`"
 tmpdir="`mktemp -d /tmp/mkcomposecache.XXXXXXXXXX`"
 
-echo "Creating compose cache files in $ROOT$composecache/"
-echo "  for $ROOT$localedir/*, internal name $localedir/*"
-echo ""
+if [ "x$user" != x ] ; then
+  chown ${user}:root $tmpdir || exiterr "cannot chown $cachedir to ${user}:root"
+fi
+
 echo "Starting Xvfb..."
-$ROOT$xvfb \
-  -fp $ROOT$PREFIX/lib/X11/fonts/misc/ \
-  -sp $ROOT/etc/X11/xserver/SecurityPolicy \
-  -co $ROOT$PREFIX/lib/X11/rgb \
-  :99 &> $tmpfile &
+$xvfb $xvfbopts :99  1>$tmpfile 2>&1  &
 trap "echo 1>&2 'Killing Xvfb...'; kill $! 2>/dev/null; rm -rf $tmpdir 2>/dev/null; rm -f $tmpfile 2>/dev/null; true" 0
 
 DISPLAY=:99
-LD_LIBRARY_PATH=$ROOT$PREFIX/lib64:$ROOT$PREFIX/lib
-XLOCALEDIR=$ROOT$localedir/
+LD_LIBRARY_PATH="$ldpath"
+XLOCALEDIR=$root$localedir
 export DISPLAY LD_LIBRARY_PATH XLOCALEDIR
 
+# Starting a single program so that x does not re-initialize for each mkcomposecache
 sleep 5
-$ROOT$PREFIX/bin/xbiff 1>/dev/null 2>&1 &
+$xbiff 1>/dev/null 2>&1 &
 echo ""
 
+
+# Create caches
+
 while read comp loc ; do
-  if [ -r "$ROOT$localedir/$comp" ] ; then
+  if [ -r "$root$localedir/$comp" ] ; then
     rm -f $tmpdir/*
-    $ROOT$mkcomposecache "$loc" "$ROOT$localedir/$comp" $tmpdir "$localedir/$comp"
+    if [ "x$user" = x ] ; then
+      $mkcomposecache "$loc" "$root$localedir/$comp" $tmpdir "$localedir/$comp"
+    else
+      su -c "$mkcomposecache '$loc' '$root$localedir/$comp' $tmpdir '$localedir/$comp'" $user
+    fi
     case $? in
     0)
       f="`/bin/ls $tmpdir`"
-      if [ -r "$tmpdir/$f" ] ; then
-        if [ -r $ROOT$composecache/$f ] ; then
-	  if cmp $tmpdir/$f $ROOT$composecache/$f ; then
+      if [ -f "$tmpdir/$f" -a -r "$tmpdir/$f" ] ; then
+        if [ -r $cachedir/$f ] ; then
+	  if cmp $tmpdir/$f $cachedir/$f ; then
 	    echo "verified cache for $loc ($comp): $f"
 	  else
-            mv $ROOT$composecache/$f $ROOT$composecache/$f.old
-            mv $tmpdir/$f $ROOT$composecache/
+            mv $cachedir/$f $cachedir/$f.old
+            mv $tmpdir/$f $cachedir/
 	    echo 1>&2 "* WARNING:"
 	    echo 1>&2 "  invalid (old?) cache for $loc ($comp): $f.old"
 	  fi
 	else
-          mv $tmpdir/$f $ROOT$composecache/
+          mv $tmpdir/$f $cachedir/
           echo "created  cache for $loc ($comp): $f"
 	fi
       else
@@ -97,7 +185,23 @@ while read comp loc ; do
       ;;
     esac
   fi
-done < $ROOT$localedir/compose.dir
+done < $root$localedir/compose.dir
+
+
+# Aftermaths
+
+find $cachedir -type f | xargs chmod 444 || exiterr "cannot chmod $cachedir/*"
+if [ "x$user" != x ] ; then
+  chown -R root:root $cachedir || exiterr "cannot chown $cachedir to root:root"
+else
+  echo ""
+  echo "NOTE:"
+  echo "  The files in $cachedir are currently owned by `whoami`."
+  echo "  They have to be owned by root in the final installation in order to work."
+  echo ""
+fi
+
+echo "Success."
 
 exit 0
 

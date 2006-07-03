@@ -1,7 +1,7 @@
 # -*- Autoconf -*-
 
 AC_PREREQ(2.53)
-AC_INIT([mkcomposecache], [1.0], [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
+AC_INIT([mkcomposecache], [1.1], [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg])
 AC_CONFIG_SRCDIR([mkcomposecache.c])
 
 AM_INIT_AUTOMAKE([dist-bzip2])
