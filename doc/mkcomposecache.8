@@ -1,0 +1,68 @@
+.TH MKCOMPOSECACHE 1 "mkcomposecache 1.0" "X Version 11"
+
+.SH NAME
+mkcomposecache \- create a cache file for a compose file explicitely
+
+.SH SYNOPSIS
+.B "mkcomposecache"
+.I locale
+.I compose-file
+.I cache-dir
+[
+.I internal-name
+]
+
+.SH DESCRIPTION
+.I mkcomposecache
+creates a cache file for the specified
+.I compose-file
+used in the given
+.I locale
+and saves it in
+.IR cache-dir .
+If
+.I internal-name
+has been spezified, it is used as the name of the compose table for computing
+the hash values and internal validation. This is necessary if global compose
+cache files shall be created while using
+.I DESTDIR
+during X11 installation.
+
+Notes:
+.TP 2
+-
+compose cache files are created by libX11, thus
+an Xserver has to be running and
+.I DISPLAY
+has to be set correctly for creating cache files.
+.TP 2
+-
+libX11 will not write compose cache files if run as root or with different
+real and effective uids.
+.TP 2
+-
+libX11 will not create compose cache files in directories writable for other
+users.
+
+.SH DIAGNOSTICS
+.I mkcomposecache
+returns with exit status 1 on general errors (no Xserver, invoked as root,
+etc.) and 2 on unsupported locales.
+
+An exit status of 0 does not imply that a cache file is actually written,
+though.  This very much depends on the used libX11 and its safety regulations.
+
+.SH EXAMPLES
+.B mkcomposecache
+en_US.UTF-8
+/var/tmp/buildroot/usr/share/X11/locale/en_US.UTF-8/Compose
+/var/tmp/buildroot/var/X11R6/compose_cache
+/usr/share/X11/locale/en_US.UTF-8/Compose
+
+.SH FILES
+.B /var/X11R6/compose_cache
+Location of global compose cache.
+
+.SH AUTHOR
+.B mkcomposecache
+was written by Matthias Hopf <mhopf@suse.de>.
