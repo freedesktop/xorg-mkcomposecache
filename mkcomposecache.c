@@ -18,6 +18,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
+
 #include <X11/Xlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,13 +69,19 @@ int main (int argc, char *argv[]) {
         sprintf (dest, "XCOMPOSECACHE=%s=%s", argv[3], argv[4]);
     putenv  (src);
     putenv  (dest);
+#if HAVE_UNSETENV
+    unsetenv ("XMODIFIERS");
+#else
+    putenv ("XMODIFIERS");
+#endif
 
     if (! (disp = XOpenDisplay (NULL)) ) {
 	perror ("* XOpenDisplay");
 	return 1;
     }
     XSetLocaleModifiers("");
-    im = XOpenIM  (disp, NULL, NULL, NULL);
+    if (! (im = XOpenIM  (disp, NULL, NULL, NULL)) )
+	fputs ("* XOpenIM: no input method\n", stderr);
 
     if (im)
 	XCloseIM      (im);

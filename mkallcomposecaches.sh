@@ -13,7 +13,9 @@ usage() {
 cat 1>&2 <<EOUSAGE
 
 $0 [var=arg] [...] root
-e.g. $0 prefix=/usr/X11R7 /tmp/build-xorg
+  e.g. $0 prefix=/usr/X11R7 /tmp/build-xorg
+Double quote args with spaces.
+  e.g. $0 "xvfbopts='-sp /usr/lib/xserver/SecurityPolicy'" /tmp/build-xorg
 
 Base defaults:
     prefix=/usr
@@ -22,9 +24,9 @@ Base defaults:
 
 Program + args defaults:
     xvfb=\$root\$prefix/bin/Xvfb
-    xvfbopts='-fp \$root\$prefix/\$libs/X11/fonts/misc/
-              -sp \$root/etc/X11/xserver/SecurityPolicy
-	      -co \$root\$prefix/\$libs/X11/rgb'
+    xvfbopts='-fp \$root\$prefix/\$libs/X11/fonts/misc/,
+                  \$root\$prefix/share/fonts/misc
+              -sp /dev/null'
     xbiff=\$root\$prefix/bin/xbiff
     mkcomposecache=\$root\$prefix/sbin/mkcomposecache
 
@@ -78,7 +80,7 @@ test "x$xvfb" = x           && xvfb=$root$prefix/bin/Xvfb
 test "x$xbiff" = x          && xbiff=$root$prefix/bin/xbiff
 test "x$mkcomposecache" = x && mkcomposecache=$root$prefix/sbin/mkcomposecache
 test "x$cachedir" = x       && cachedir=$root/var/cache/libx11/compose
-test "x$xvfbopts" = x       && xvfbopts="-fp $root$prefix/$libs/X11/fonts/misc/ -sp $root/etc/X11/xserver/SecurityPolicy -co $root$prefix/$libs/X11/rgb"
+test "x$xvfbopts" = x       && xvfbopts="-fp $root$prefix/$libs/X11/fonts/misc/,$root$prefix/share/fonts/misc -sp /dev/null"
 test "x$user" = x           && user=nobody
 test "x`whoami`" = xroot    || user=""
 
@@ -131,7 +133,7 @@ fi
 
 echo "Starting Xvfb..."
 $xvfb $xvfbopts :99  1>$tmpfile 2>&1  &
-trap "echo 1>&2 'Killing Xvfb...'; kill $! 2>/dev/null; rm -rf $tmpdir 2>/dev/null; rm -f $tmpfile 2>/dev/null; true" 0
+trap "echo 1>&2 'Killing Xvfb...'; kill $! 2>/dev/null; sleep 1; echo 1>&2 'Xvfb output:'; cat 1>&2 $tmpfile; rm -rf $tmpdir 2>/dev/null; rm -f $tmpfile 2>/dev/null; true" 0
 
 DISPLAY=:99
 LD_LIBRARY_PATH="$ldpath"
@@ -140,7 +142,7 @@ export DISPLAY LD_LIBRARY_PATH XLOCALEDIR
 
 # Starting a single program so that x does not re-initialize for each mkcomposecache
 sleep 5
-$xbiff 1>/dev/null 2>&1 &
+$xbiff 2>&1 &
 echo ""
 
 
