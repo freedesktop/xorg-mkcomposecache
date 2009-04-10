@@ -15,7 +15,7 @@ cat 1>&2 <<EOUSAGE
 $0 [var=arg] [...] root
   e.g. $0 prefix=/usr/X11R7 /tmp/build-xorg
 Double quote args with spaces.
-  e.g. $0 "xvfbopts='-sp /usr/lib/xserver/SecurityPolicy'" /tmp/build-xorg
+  e.g. $0 "xvfbopts='-fp catalogue:/etc/X11/fontpath.d'" /tmp/build-xorg
 
 Base defaults:
     prefix=/usr
@@ -25,8 +25,7 @@ Base defaults:
 Program + args defaults:
     xvfb=\$root\$prefix/bin/Xvfb
     xvfbopts='-fp \$root\$prefix/\$libs/X11/fonts/misc/,
-                  \$root\$prefix/share/fonts/misc
-              -sp /dev/null'
+                  \$root\$prefix/share/fonts/misc'
     xbiff=\$root\$prefix/bin/xbiff
     mkcomposecache=\$root\$prefix/sbin/mkcomposecache
 
@@ -80,7 +79,7 @@ test "x$xvfb" = x           && xvfb=$root$prefix/bin/Xvfb
 test "x$xbiff" = x          && xbiff=$root$prefix/bin/xbiff
 test "x$mkcomposecache" = x && mkcomposecache=$root$prefix/sbin/mkcomposecache
 test "x$cachedir" = x       && cachedir=$root/var/cache/libx11/compose
-test "x$xvfbopts" = x       && xvfbopts="-fp $root$prefix/$libs/X11/fonts/misc/,$root$prefix/share/fonts/misc -sp /dev/null"
+test "x$xvfbopts" = x       && xvfbopts="-fp $root$prefix/$libs/X11/fonts/misc/,$root$prefix/share/fonts/misc"
 test "x$user" = x           && user=nobody
 test "x`whoami`" = xroot    || user=""
 
