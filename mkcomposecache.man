@@ -1,7 +1,7 @@
-.TH MKCOMPOSECACHE 1 "mkcomposecache 1.0" "X Version 11"
+.TH MKCOMPOSECACHE __adminmansuffix__ __xorgversion__
 
 .SH NAME
-mkcomposecache \- create a cache file for a compose file explicitely
+mkcomposecache \- create a cache file for a compose file explicitly
 
 .SH SYNOPSIS
 .B "mkcomposecache"
@@ -22,7 +22,7 @@ and saves it in
 .IR cache-dir .
 If
 .I internal-name
-has been spezified, it is used as the name of the compose table for computing
+has been specified, it is used as the name of the compose table for computing
 the hash values and internal validation. This is necessary if global compose
 cache files shall be created while using
 .I DESTDIR
@@ -60,7 +60,7 @@ en_US.UTF-8
 /usr/share/X11/locale/en_US.UTF-8/Compose
 
 .SH FILES
-.B /var/X11R6/compose_cache
+.B /var/cache/libx11/compose/
 Location of global compose cache.
 
 .SH AUTHOR

@@ -25,4 +25,4 @@ AC_CHECK_FUNCS([unsetenv])
 AC_SUBST(XLIB_CFLAGS)
 AC_SUBST(XLIB_LIBS)
 
-AC_OUTPUT([Makefile doc/Makefile])
+AC_OUTPUT([Makefile])
