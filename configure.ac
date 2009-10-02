@@ -8,12 +8,12 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([dist-bzip2])
 AM_MAINTAINER_MODE
 
-# Require xorg-macros 1.2 for XORG_CWARNFLAGS, XORG_CHANGELOG
-m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.2 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.2)
+# Require xorg-macros 1.3 for XORG_DEFAULT_OPTIONS
+m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.3 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.3)
 
 AC_PROG_CC
-XORG_CWARNFLAGS
+XORG_DEFAULT_OPTIONS
 AC_PROG_INSTALL
 
 PKG_CHECK_MODULES(XLIB, x11)
@@ -24,7 +24,5 @@ AC_CHECK_FUNCS([unsetenv])
 
 AC_SUBST(XLIB_CFLAGS)
 AC_SUBST(XLIB_LIBS)
-
-XORG_CHANGELOG
 
 AC_OUTPUT([Makefile doc/Makefile])
