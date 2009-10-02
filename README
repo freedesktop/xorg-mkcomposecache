@@ -2,3 +2,27 @@ mkcomposecache is used for creating global (system-wide) Compose cache files.
 
 Compose cache files help with application startup times and memory usage,
 especially in locales with large Compose tables (e.g. all UTF-8 locales).
+
+All questions regarding this software should be directed at the
+Xorg mailing list:
+
+        http://lists.freedesktop.org/mailman/listinfo/xorg
+
+Please submit bug reports to the Xorg bugzilla:
+
+        https://bugs.freedesktop.org/enter_bug.cgi?product=xorg
+
+The master development code repository can be found at:
+
+        git://anongit.freedesktop.org/git/xorg/app/mkcomposecache
+
+        http://cgit.freedesktop.org/xorg/app/mkcomposecache
+
+For patch submission instructions, see:
+
+	http://www.x.org/wiki/Development/Documentation/SubmittingPatches
+
+For more information on the git code manager, see:
+
+        http://wiki.x.org/wiki/GitPage
+
