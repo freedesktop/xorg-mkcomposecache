@@ -5,7 +5,7 @@ AC_INIT([mkcomposecache], [1.2.1], [https://bugs.freedesktop.org/enter_bug.cgi?p
 AC_CONFIG_SRCDIR([mkcomposecache.c])
 AC_CONFIG_HEADERS([config.h])
 
-AM_INIT_AUTOMAKE([dist-bzip2])
+AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AM_MAINTAINER_MODE
 
 # Require xorg-macros 1.3 for XORG_DEFAULT_OPTIONS

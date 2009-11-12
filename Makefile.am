@@ -6,20 +6,24 @@ adminmandir = $(ADMIN_MAN_DIR)
 adminman_PRE = mkcomposecache.man
 adminman_DATA = $(adminman_PRE:man=@ADMIN_MAN_SUFFIX@)
 
-EXTRA_DIST = ChangeLog mkallcomposecaches.sh $(adminman_PRE)
+EXTRA_DIST = mkallcomposecaches.sh $(adminman_PRE)
 
 mkcomposecache_SOURCES = mkcomposecache.c
 
 mkcomposecache_LDADD = @XLIB_LIBS@
 
 CLEANFILES = $(adminman_DATA)
-MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in depcomp install-sh missing ChangeLog
+MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in depcomp install-sh missing
 
-.PHONY: ChangeLog
+.PHONY: ChangeLog INSTALL
+
+INSTALL:
+	$(INSTALL_CMD)
+
 ChangeLog:
 	$(CHANGELOG_CMD)
 
-dist-hook: ChangeLog
+dist-hook: ChangeLog INSTALL
 
 SED = sed
 

@@ -1,3 +1,5 @@
+			X.Org Compose file cache creator
+
 mkcomposecache is used for creating global (system-wide) Compose cache files.
 
 Compose cache files help with application startup times and memory usage,
