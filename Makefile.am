@@ -12,8 +12,8 @@ mkcomposecache_SOURCES = mkcomposecache.c
 
 mkcomposecache_LDADD = @XLIB_LIBS@
 
+MAINTAINERCLEANFILES = ChangeLog INSTALL
 CLEANFILES = $(adminman_DATA)
-MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in depcomp install-sh missing
 
 .PHONY: ChangeLog INSTALL
 
