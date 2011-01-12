@@ -13,7 +13,6 @@ m4_ifndef([XORG_MACROS_VERSION],
           [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.8)
 
-AC_PROG_CC
 XORG_DEFAULT_OPTIONS
 
 PKG_CHECK_MODULES(XLIB, x11)
