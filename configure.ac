@@ -21,6 +21,5 @@ AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h locale.h], , [AC_MSG_FAILUR
 AC_CHECK_FUNCS([setlocale], , [AC_MSG_FAILURE("cannot find essential function")])
 AC_CHECK_FUNCS([unsetenv])
 
-AC_SUBST(XLIB_LIBS)
 
 AC_OUTPUT([Makefile])
