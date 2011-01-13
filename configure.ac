@@ -12,7 +12,6 @@ AM_MAINTAINER_MODE
 m4_ifndef([XORG_MACROS_VERSION],
           [m4_fatal([must install xorg-macros 1.8 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.8)
-
 XORG_DEFAULT_OPTIONS
 
 PKG_CHECK_MODULES(XLIB, x11)
@@ -21,5 +20,7 @@ AC_CHECK_HEADERS([stdio.h stdlib.h string.h unistd.h locale.h], , [AC_MSG_FAILUR
 AC_CHECK_FUNCS([setlocale], , [AC_MSG_FAILURE("cannot find essential function")])
 AC_CHECK_FUNCS([unsetenv])
 
-
-AC_OUTPUT([Makefile])
+AC_CONFIG_FILES([
+	Makefile
+	man/Makefile])
+AC_OUTPUT
