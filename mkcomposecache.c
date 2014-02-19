@@ -27,11 +27,55 @@
 #include <unistd.h>
 #include <locale.h>
 
+#ifndef HAVE_ASPRINTF
+#include <stdarg.h>
+
+/* sprintf variant found in newer libc's which allocates string to print to */
+static int _X_ATTRIBUTE_PRINTF(2,3)
+asprintf(char ** ret, const char *format, ...)
+{
+    char buf[256];
+    int len;
+    va_list ap;
+
+    va_start(ap, format);
+    len = vsnprintf(buf, sizeof(buf), format, ap);
+    va_end(ap);
+
+    if (len < 0)
+	return -1;
+
+    if (len < sizeof(buf))
+    {
+	*ret = strdup(buf);
+    }
+    else
+    {
+	*ret = malloc(len + 1); /* vsnprintf doesn't count trailing '\0' */
+	if (*ret != NULL)
+	{
+	    va_start(ap, format);
+	    len = vsnprintf(*ret, len + 1, format, ap);
+	    va_end(ap);
+	    if (len < 0) {
+		free(*ret);
+		*ret = NULL;
+	    }
+	}
+    }
+
+    if (*ret == NULL)
+	return -1;
+
+    return len;
+}
+#endif /* HAVE_ASPRINTF */
+
 int main (int argc, char *argv[]) {
     Display *disp;
     XIM      im;
     char    *src, *dest;
-    int      len;
+    int      ret;
 
     if (argc != 4 && argc != 5) {
 	fprintf (stderr, "Usage: %s <Locale> <ComposeFile> <CacheDir> [<InternalName>]\n", argv[0]);
@@ -53,20 +97,20 @@ int main (int argc, char *argv[]) {
 	return 1;
     }
 
-    src  = malloc (strlen (argv[2]) + 14);
-    len  = strlen (argv[3]) + 15;
-    if (argc == 5)
-	len += strlen (argv[4]) + 1;
-    dest = malloc (len);
-    if (! src || ! dest) {
-	perror ("* malloc");
+    if (asprintf (&src, "XCOMPOSEFILE=%s", argv[2]) == -1) {
+	perror ("* asprintf");
 	return 1;
     }
-    sprintf (src,  "XCOMPOSEFILE=%s", argv[2]);
+
     if (argc == 4)
-        sprintf (dest, "XCOMPOSECACHE=%s", argv[3]);
+	ret = asprintf (&dest, "XCOMPOSECACHE=%s", argv[3]);
     else
-        sprintf (dest, "XCOMPOSECACHE=%s=%s", argv[3], argv[4]);
+	ret = asprintf (&dest, "XCOMPOSECACHE=%s=%s", argv[3], argv[4]);
+    if (ret == -1) {
+	perror ("* asprintf");
+	return 1;
+    }
+
     putenv  (src);
     putenv  (dest);
 #if HAVE_UNSETENV
